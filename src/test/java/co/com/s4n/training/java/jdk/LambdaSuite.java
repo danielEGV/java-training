@@ -42,9 +42,35 @@ public class LambdaSuite {
     }
 
     @Test
+    public void usarUnaInterfaceFuncional1_1(){
+
+        InterfaceDeEjemplo i = (x,y)->(x*y)-1;
+
+        ClaseDeEjemplo instancia = new ClaseDeEjemplo();
+
+        int resultado = instancia.metodoDeEjemplo1(1,i);
+        System.out.print(resultado);
+
+        assertTrue(resultado==2);
+    }
+
+    @Test
     public void usarUnaInterfaceFuncional2(){
 
         BiFunction<Integer, Integer, Integer> f = (x, y) -> new Integer(x.intValue()+y.intValue());
+
+        ClaseDeEjemplo instancia = new ClaseDeEjemplo();
+
+        int resultado = instancia.metodoDeEjemplo2(1,f);
+
+        assertTrue(resultado==4);
+    }
+
+    @Test
+    public void usarUnaInterfaceFuncional2_1(){
+
+        BiFunction<Integer, Integer, Integer> f = (x, y) ->
+                new Integer((x.intValue()+y.intValue())/(y.intValue()-x.intValue()));
 
         ClaseDeEjemplo instancia = new ClaseDeEjemplo();
 
@@ -66,6 +92,21 @@ public class LambdaSuite {
         ClaseDeEjemplo2 instancia = new ClaseDeEjemplo2();
 
         int resultado = instancia.metodoDeEjemplo2(1,2,f);
+
+        assertEquals(3,resultado);
+    }
+
+    @Test
+    public void usarUnaFuncionConTiposPrimitivos_1(){
+        IntBinaryOperator f = (x, y) -> x + y;
+
+        ClaseDeEjemplo2 instancia = new ClaseDeEjemplo2();
+
+        double n = 1.0;
+
+        //int resultado = instancia.metodoDeEjemplo2(n,2,f);
+
+        int resultado = instancia.metodoDeEjemplo2(1, 2, f);
 
         assertEquals(3,resultado);
     }
@@ -114,6 +155,25 @@ public class LambdaSuite {
         ClaseDeEjemplo4 instancia = new ClaseDeEjemplo4();
 
         instancia.operarConConsumer(c1);
+
+
+    }
+
+    class ClaseDeEjemplo5{
+        public void operarConConsumer(int i, Consumer<Integer> c){
+            c.accept(i);
+        }
+    }
+
+    @Test
+    public void usarUnaFuncionConConsumer_1(){
+        Consumer<Integer> c1 = x -> {
+            System.out.println("Me han entregado este valor: "+x);
+        };
+
+        ClaseDeEjemplo5 instancia = new ClaseDeEjemplo5();
+
+        instancia.operarConConsumer(3, c1);
 
 
     }
