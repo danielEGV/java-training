@@ -1,6 +1,8 @@
 package co.com.s4n.training.java.jdk;
 
 import static org.junit.Assert.*;
+
+import org.junit.Assert;
 import org.junit.Test;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -175,6 +177,65 @@ public class LambdaSuite {
 
         instancia.operarConConsumer(3, c1);
 
+
+    }
+
+    @FunctionalInterface
+    interface Ejercicio1_B {
+        void funLambda(Supplier<Integer> a, Supplier<Integer> b, Supplier<Integer> c, int d, Consumer<Integer> c1);
+    }
+
+    @FunctionalInterface
+    interface Ejercicio1{
+        Consumer<Integer> funcLambda(Supplier<Integer> a, Supplier<Integer> b, Supplier<Integer> c);
+    }
+
+
+    class ClaseEjercicio1{
+        public void operar(int i, Consumer<Integer> c){
+            c.accept(i);
+        }
+    }
+
+    @Test
+    public void usarUnaFuncionConLambdaSuplierConsumer_1(){
+        Ejercicio1 e = (a, b, c) ->{
+            Consumer<Integer> c1 = d -> System.out.println(a.get() + b.get() + c.get() + d);
+            return c1;
+        };
+
+        Supplier<Integer> s1 = () -> 3;
+        Supplier<Integer> s2 = () -> 2;
+        Supplier<Integer> s3 = () -> 1;
+
+        Consumer<Integer> c1 = e.funcLambda(s1, s2, s3);
+        System.out.println();
+        c1.accept(1);
+
+        /*
+        Supplier<Integer> s1 = () -> 3;
+        Supplier<Integer> s2 = () -> 2;
+        Supplier<Integer> s3 = () -> 1;
+
+        Consumer<Integer> c2 = d -> {
+            Integer s = s1.get() + s2.get() + s3.get() + d;
+            System.out.println("1. Valor ejercicio1: " + s);
+        };
+
+        ClaseEjercicio1 claseEjercicio1 = new ClaseEjercicio1();
+        claseEjercicio1.operar(1, c2);
+
+        // Otra forma.
+
+        Ejercicio1_B e = (a, b, c, d, c1) -> {
+            int s = a.get() + b.get() + c.get() + d;
+            c1.accept(s);
+        };
+
+        Consumer<Integer> c1 = t -> System.out.println("2. Valor ejercicio1: " + t);
+
+        e.funLambda(s1, s2, s3, 1, c1);
+        */
 
     }
 
