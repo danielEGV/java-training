@@ -109,15 +109,19 @@ public class StreamsSuite {
     public void testStreams7_1(){
         List<String> l = Arrays.asList("a1", "a2", "a3");
 
-        /*
+
         List<String> l1 = new ArrayList<>();
         List<Integer> l2 = new ArrayList<>();
 
 
         l.forEach(s -> l1.add(s.substring(1)));
         l1.forEach(s -> l2.add(Integer.parseInt(s)));
-        l2.sort((c1, c2) -> c1.compareTo(c2));
-        */
+        l2.sort((c1, c2) -> c2.compareTo(c1));
+
+        int resultado = l2.get(0).intValue();
+
+        assertEquals(3, resultado);
+
 
 
         /*IntStream i = l.stream()
@@ -334,6 +338,19 @@ public class StreamsSuite {
         stream.noneMatch(s -> true);
     }
 
+    @Test(expected = java.lang.IllegalStateException.class)
+    public void testStreams14_1() {
+        Stream<String> stream =
+                Stream.of("d2", "a2", "b1", "b3", "c")
+                        .filter(s -> s.startsWith("a"));
+
+        boolean b = stream.anyMatch(s -> true);
+        assertTrue(b);
+
+        //Un stream no se puede volver a usar despues de haberse ejecutado una operacion final sobre el :(
+        stream.noneMatch(s -> true);
+    }
+
     @Test
     public void testStreams15() {
 
@@ -346,6 +363,9 @@ public class StreamsSuite {
 
         assert(b);
         assert(b1);
+
+        assertTrue(b);
+        assertFalse(b1);
 
     }
 
@@ -397,6 +417,8 @@ public class StreamsSuite {
                         .collect(Collectors.toList());
 
         assertTrue(filtered.size()==2);
+        assertTrue(filtered.stream().anyMatch(p -> p.name.equals("Peter")));
+        assertTrue(filtered.stream().anyMatch(p -> p.name.equals("Pamela")));
 
     }
 
