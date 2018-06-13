@@ -2,6 +2,7 @@ package co.com.s4n.training.java.jdk;
 
 import static org.junit.Assert.*;
 
+import co.com.s4n.training.java.ClaseLambda;
 import org.junit.Assert;
 import org.junit.Test;
 import java.util.function.BiFunction;
@@ -318,10 +319,29 @@ public class LambdaSuite {
         imprimirEnMayuscula.accept("Hola");
     }
 
+    public class ClaseLambda {
+        String a;
+
+        public Consumer<String> setA() {
+            Consumer<String> c = b -> a = b;
+            return c;
+        }
+    }
+
+    @Test
+    public void testEjercicio5() {
+        ClaseLambda claseLambda = new ClaseLambda();
+        Consumer<String> c = claseLambda.setA();
+        c.accept("Hola");
+
+        Assert.assertEquals("Hola", claseLambda.a);
+
+    }
+
 
 
 }
-
+/*
 class ClaseEjercicio4 {
     static String a;
 
@@ -331,4 +351,6 @@ class ClaseEjercicio4 {
 
         System.out.println(a);
     }
+
 }
+*/

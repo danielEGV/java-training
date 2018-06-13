@@ -12,6 +12,8 @@ public class ClaseLambda {
         return c;
     }
 
+
+
     public static void main(String[] args) {
         ClaseLambda claseLambda = new ClaseLambda();
         Consumer<String> c = claseLambda.setA();
