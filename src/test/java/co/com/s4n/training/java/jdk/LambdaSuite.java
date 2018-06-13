@@ -239,4 +239,83 @@ public class LambdaSuite {
 
     }
 
+    @FunctionalInterface
+    interface Ejercicio2Lambda {
+        String caracterCompuesto(char a, char b);
+    }
+
+    class ClaseEjercicio2Lambda {
+        String metodoCaracterCompuesto (char c, Ejercicio2Lambda e) {
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.append(c);
+            stringBuilder.append(e.caracterCompuesto('c', 'a'));
+            return stringBuilder.toString();
+        }
+        String metodoCaracterCompuesto2(char c, BiFunction<Character, Character, String> b) {
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.append(c);
+            stringBuilder.append(b.apply('c', 'a'));
+            return stringBuilder.toString();
+        }
+    }
+
+    @Test
+    public void testEjercicio2_1() {
+        Ejercicio2Lambda e = (a, b) -> {
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.append(a);
+            stringBuilder.append(b);
+            return stringBuilder.toString();
+        };
+
+        ClaseEjercicio2Lambda c = new ClaseEjercicio2Lambda();
+        String resultado = c.metodoCaracterCompuesto('b', e);
+
+        Assert.assertEquals("bca", resultado);
+    }
+
+    @Test
+    public void ejercicio2_2() {
+        ClaseEjercicio2Lambda c = new ClaseEjercicio2Lambda();
+
+        BiFunction<Character, Character, String> caracter = (a, b) -> {
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.append(a);
+            stringBuilder.append(b);
+            return stringBuilder.toString();
+        };
+
+        String resultado1 = c.metodoCaracterCompuesto2('b', caracter);
+
+        Assert.assertEquals("bca", resultado1);
+    }
+
+    @FunctionalInterface
+    interface Ejercicio3Lambda {
+        IntBinaryOperator metodoEjercicio3(Supplier<Integer> a, Supplier<Integer> b);
+    }
+
+    @Test
+    public void testEjercicio3 (){
+        Ejercicio3Lambda e = (a, b) -> {
+            IntBinaryOperator bO = (x, y) -> x + y + a.get() + b.get();
+            return bO;
+        };
+        Supplier<Integer> a = () -> 1;
+        Supplier<Integer> b = () -> 2;
+
+        IntBinaryOperator bOp = e.metodoEjercicio3(a, b);
+
+        int result = bOp.applyAsInt(3, 4);
+
+        Assert.assertEquals(10, result);
+    }
+
+    @Test
+    public void testEjercicio4() {
+        Consumer<String> imprimirEnMayuscula = s -> System.out.println(s.toUpperCase());
+        System.out.println();
+        imprimirEnMayuscula.accept("Hola");
+    }
+
 }
