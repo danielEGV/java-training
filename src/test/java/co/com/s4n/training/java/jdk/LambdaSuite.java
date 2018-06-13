@@ -318,4 +318,17 @@ public class LambdaSuite {
         imprimirEnMayuscula.accept("Hola");
     }
 
+
+
+}
+
+class ClaseEjercicio4 {
+    static String a;
+
+    public static void main(String args[]) {
+        Consumer<String> c = b -> a = b.toString();
+        c.accept("A");
+
+        System.out.println(a);
+    }
 }
