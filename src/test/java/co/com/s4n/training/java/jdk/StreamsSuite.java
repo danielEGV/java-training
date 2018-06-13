@@ -57,6 +57,17 @@ public class StreamsSuite {
     }
 
     @Test
+    public void testStreams3_1(){
+        Stream<String> stringStream;
+        stringStream = Stream.of();
+        Optional<String> first = stringStream
+                .findFirst();
+
+        assertEquals("NONE",first.orElseGet(()->"NONE"));
+
+    }
+
+    @Test
     public void testStreams4(){
         OptionalInt first = IntStream.range(1, 4)
                 .findFirst();
