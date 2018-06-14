@@ -1,5 +1,6 @@
 package co.com.s4n.training.java.vavr;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 
@@ -286,5 +287,78 @@ public class OptionSuite {
         Option<Integer> integers = For(esPar(2), d ->
                                    For(esPar(4), c -> Option(d+c))).toOption();
         assertEquals(integers,Some(6));
+    }
+
+    private Option<Integer> sumar(int a, int b) {
+        System.out.println("Sumando " + a + " + " + b);
+        return Option(a + b);
+    }
+
+    private Option<Integer> restar(int a, int b) {
+        System.out.println("Restando " + a + " - " + b);
+        return a - b > 0 ? Option(a - b) : None();
+    }
+
+    @Test
+    public void flatMapSumar() {
+        Option<Integer> resultado = sumar(1, 1)
+                .flatMap(a -> sumar(a, 1)
+                        .flatMap(b -> sumar(b, 1)
+                                        .flatMap(c -> sumar(c, 1)
+                                                .flatMap(d -> sumar(d, 1))
+                )));
+        assertEquals(resultado.getOrElse(666).intValue(), 6);
+    }
+
+    @Test
+    public void flatMapRestar() {
+        Option<Integer> resultado = sumar(1, 1)
+                .flatMap(a -> sumar(a, 1)
+                                .flatMap(b -> restar(b, 4)
+                                                .flatMap(c -> sumar(c, 1)
+                                                        .flatMap(d -> sumar(d, 1))
+                )));
+
+        assertEquals(resultado, None());
+        assertEquals(resultado.getOrElse(666).intValue(), 666);
+    }
+
+    @Test
+    public void flatMapSumar_1() {
+        Option<Integer> resultado = sumar(1, 1)
+                .flatMap(a -> sumar(a, 1))
+                .flatMap(b -> sumar(b, 1))
+                .flatMap(c -> sumar(c, 1))
+                .flatMap(d -> sumar(d, 1));
+        assertEquals(resultado.getOrElse(666).intValue(), 6);
+    }
+
+    @Test
+    public void flatMapRestar_1() {
+        Option<Integer> resultado = sumar(1, 1)
+                .flatMap(a -> sumar(a, 1))
+                .flatMap(b -> restar(b, 4))
+                .flatMap(c -> sumar(c, 1))
+                .flatMap(d -> sumar(d, 1));
+
+        assertEquals(resultado, None());
+        assertEquals(resultado.getOrElse(666).intValue(), 666);
+    }
+
+    @Test
+    public void flatMapInOption() {
+        Option<Integer> o1 = Option.of(1);
+        Option<Option<Integer>> m = o1.map(i -> Option(identidadPosibleNull(i.intValue() - 3)));
+        Option<Integer> y = o1.flatMap(i -> Option.of(i.intValue() - 3));
+    }
+
+    @Test
+    public void flatMapInOptionFor() {
+        Option<Integer> res =
+                For(sumar(1, 1), r1 ->
+                For(sumar(r1, 1), r2 ->
+                For(sumar(r2, 1), r3 -> sumar(r3, r1)))).toOption();
+
+        assertEquals(res.getOrElse(666).intValue(), 6);
     }
 }
