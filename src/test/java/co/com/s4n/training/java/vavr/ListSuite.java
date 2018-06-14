@@ -3,7 +3,11 @@ package co.com.s4n.training.java.vavr;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import io.vavr.collection.List;
+import io.vavr.control.Option;
 import org.junit.Test;
+
+import java.util.NoSuchElementException;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static io.vavr.collection.Iterator.empty;
@@ -49,6 +53,39 @@ public class ListSuite {
         List<Integer> expectedTail = List.of(2,3);
         List<Integer> tail = list1.tail();
         assertEquals(tail, expectedTail);
+    }
+
+    @Test
+    public void testTail_1(){
+        List<Integer> list1 = List.of(1);
+        List<Integer> expectedTail = List.of();
+        List<Integer> tail = list1.tail();
+        assertEquals(tail, expectedTail);
+    }
+
+    @Test(expected = NoSuchElementException.class)
+    public void testTail_2() {
+        List<Integer> list1 = List.of();
+        Integer head = list1.head();
+        System.out.println("head" + head);
+    }
+
+    @Test
+    public void testTail_3() {
+        List<Integer> list1 = List.of();
+        Option<Integer> headIntegers = list1.headOption();
+        //System.out.println("head" + );
+        assertEquals(headIntegers, Option.none());
+    }
+
+
+    @Test
+    public void testTail_4() {
+        List<Integer> list1 = List.of();
+        Option<Integer> head = list1.headOption();
+        Integer headInteger = head.getOrElse(666);
+        //System.out.println("head" + head.getOrElse(666));
+        assertEquals(headInteger, new Integer(666));
     }
 
     @Test
