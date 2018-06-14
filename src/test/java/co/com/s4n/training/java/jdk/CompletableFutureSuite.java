@@ -2,11 +2,14 @@ package co.com.s4n.training.java.jdk;
 
 import static org.junit.Assert.*;
 
+//import com.sun.java.util.jar.pack.Package;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.*;
 
 public class CompletableFutureSuite {
@@ -286,6 +289,51 @@ public class CompletableFutureSuite {
         }
     }
 
+    public class Persona {
+        String name;
+        int edad;
+
+        public Persona(String name, int edad) {
+            this.name = name;
+            this.edad = edad;
+        }
+    }
+
+    @Test
+    public void t8_1(){
+
+
+        String testName = "t8_1";
+
+        CompletableFuture<Persona> completableFuture = CompletableFuture
+                .supplyAsync(() -> {
+                    System.out.println(testName + " - future corriendo en el thread: " + Thread.currentThread().getName());
+                    return "Esteban.23";
+                })
+                .thenCompose(s -> {
+                    System.out.println(testName + " - compose corriendo en el thread: " + Thread.currentThread().getName());
+                    List<String> persona = Arrays.asList(s.split("\\."));
+                    String nombre = persona.get(0);
+                    int edad = Integer.parseInt(persona.get(1));
+                    return CompletableFuture.supplyAsync(() ->{
+                        System.out.println(testName + " - CompletableFuture interno corriendo en el thread: " + Thread.currentThread().getName());
+                        return new Persona(nombre, edad);
+                    } );
+                });
+
+        try {
+            //System.out.println("Persona");
+            //System.out.println("Nombre: " + completableFuture.get().name);
+            //System.out.println("Edad: " + completableFuture.get().edad);
+            Persona persona = completableFuture.get();
+
+            assertEquals("Esteban", persona.name);
+            assertEquals(23, persona.edad);
+        }catch(Exception e){
+            assertTrue(false);
+        }
+    }
+
     @Test
     public void t9(){
 
@@ -294,10 +342,19 @@ public class CompletableFutureSuite {
 
         // El segundo parametro de thenCombina es un BiFunction la cual sí tiene que tener retorno.
         CompletableFuture<String> completableFuture = CompletableFuture
-                .supplyAsync(() -> "Hello")
+                .supplyAsync(() -> {
+                    System.out.println(testName + " - Futuro supplyAsync corriendo en el thread " + Thread.currentThread().getName());
+                    return "Hello";
+                })
                 .thenCombine(
-                        CompletableFuture.supplyAsync(() -> " World"),
-                        (s1, s2) -> s1 + s2
+                        CompletableFuture.supplyAsync(() -> {
+                            System.out.println(testName + " - Futuro thenCombine (1) corriendo en el thread " + Thread.currentThread().getName());
+                            return " World";
+                        }),
+                        (s1, s2) -> {
+                            System.out.println(testName + " - Futuro thenCombine (2) corriendo en el thread " + Thread.currentThread().getName());
+                            return s1 + s2;
+                        }
                 );
 
         try {
