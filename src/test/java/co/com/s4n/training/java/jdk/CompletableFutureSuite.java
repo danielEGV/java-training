@@ -329,7 +329,7 @@ public class CompletableFutureSuite {
 
             assertEquals("Esteban", persona.name);
             assertEquals(23, persona.edad);
-        }catch(Exception e){
+        } catch(Exception e){
             assertTrue(false);
         }
     }
@@ -384,6 +384,48 @@ public class CompletableFutureSuite {
     }
 
     @Test
+    public void testEnlanceConSupplyAsync() {
+        ExecutorService es = Executors.newFixedThreadPool(1);
+        CompletableFuture<String> f = CompletableFuture.supplyAsync(() -> "Hello", es);
+
+        CompletableFuture<String> f2 = f.supplyAsync(()->{
+            imprimirMensaje("t11 Ejecutando a");
+            sleep(500);
+            return "a";
+        }).supplyAsync(() -> {
+            imprimirMensaje("t11 Ejecuntando b");
+            return "b";
+        });
+
+        try {
+            assertEquals(f2.get(), "b");
+        } catch (Exception e) {
+            assertFalse(true);
+        }
+    }
+
+    @Test
+    public void testEnlanceConSupplyAsync_1() {
+        ExecutorService es = Executors.newFixedThreadPool(1);
+        CompletableFuture<String> f = CompletableFuture.supplyAsync(() -> "Hello", es);
+
+        CompletableFuture<String> f2 = f.supplyAsync(()->{
+            imprimirMensaje("t11_1 Ejecutando a");
+            sleep(500);
+            return "a";
+        }, es).supplyAsync(() -> {
+            imprimirMensaje("t11_1 Ejecuntando b");
+            return "b";
+        }, es);
+
+        try {
+            assertEquals(f2.get(), "b");
+        } catch (Exception e) {
+            assertFalse(true);
+        }
+    }
+
+    @Test
     public void t11(){
 
         String testName = "t11";
@@ -403,7 +445,105 @@ public class CompletableFutureSuite {
                     },
                     es
                 );
+    }
 
+    @Test
+    public void testEjercicio1() {
+        String testName = "Ex 1";
+        ExecutorService es = Executors.newFixedThreadPool(1);
+
+        CompletableFuture<String> f = CompletableFuture.supplyAsync(() -> {
+                //System.out.println(testName + " - Futuro completable supplyAsync con Thread: " + Thread.currentThread().getName());
+                imprimirMensaje(testName + " - Futuro completable supplyAsync con Thread: " + Thread.currentThread().getName());
+                return "Daniel ";
+            }, es);
+
+        CompletableFuture<String> f2 = f
+                .thenApplyAsync(s -> {
+
+                    //System.out.println(testName + " - Futuro completable thenApply (1) con Thread: " + Thread.currentThread().getName());
+                    imprimirMensaje(testName + " - Futuro completable thenApply (1) con Thread: " + Thread.currentThread().getName());
+                    sleep(500);
+                    return s + "Esteban ";
+                })
+                .thenApplyAsync(s -> {
+                    //System.out.println(testName + " - Futuro completable thenApply (2) con Thread: "+ Thread.currentThread().getName());
+                    imprimirMensaje(testName + " - Futuro completable thenApply (2) con Thread: "+ Thread.currentThread().getName());
+                    return s + "Guevara";
+                });
+
+        try {
+            System.out.println(f2.get());
+            assertEquals("Daniel Esteban Guevara", f2.get());
+        } catch (Exception e) {
+            assertTrue(false);
+        }
+    }
+
+    @Test
+    public void testEjercicio1_1() {
+        String testName = "Ex 1_1";
+        ExecutorService es = Executors.newFixedThreadPool(1);
+        ExecutorService es1 = Executors.newFixedThreadPool(2);
+
+        CompletableFuture<String> f = CompletableFuture.supplyAsync(() -> {
+            //System.out.println(testName + " - Futuro completable supplyAsync con Thread: " + Thread.currentThread().getName());
+            imprimirMensaje(testName + " - Futuro completable supplyAsync con Thread: " + Thread.currentThread().getName());
+            return "Daniel ";
+        }, es);
+
+        CompletableFuture<String> f2 = f
+                .thenApplyAsync(s -> {
+                    //System.out.println(testName + " - Futuro completable thenApply (1) con Thread: " + Thread.currentThread().getName());
+                    imprimirMensaje(testName + " - Futuro completable thenApply (1) con Thread: " + Thread.currentThread().getName());
+                    sleep(500);
+                    return s + "Esteban ";
+                }, es1)
+                .thenApplyAsync(s -> {
+                    //System.out.println(testName + " - Futuro completable thenApply (2) con Thread: "+ Thread.currentThread().getName());
+                    imprimirMensaje(testName + " - Futuro completable thenApply (2) con Thread: "+ Thread.currentThread().getName());
+                    return s + "Guevara";
+                }, es1);
+
+        try {
+            System.out.println(f2.get());
+            assertEquals("Daniel Esteban Guevara", f2.get());
+        } catch (Exception e) {
+            assertTrue(false);
+        }
+    }
+
+    @Test
+    public void testEjercicio1_2() {
+        String testName = "Ex 1_2";
+        ExecutorService es = Executors.newFixedThreadPool(1);
+        ExecutorService es1 = Executors.newFixedThreadPool(2);
+
+        CompletableFuture<String> f = CompletableFuture.supplyAsync(() -> {
+            //System.out.println(testName + " - Futuro completable supplyAsync con Thread: " + Thread.currentThread().getName());
+            imprimirMensaje(testName + " - Futuro completable supplyAsync con Thread: " + Thread.currentThread().getName());
+            return "Daniel ";
+        }, es);
+
+        CompletableFuture<String> f2 = f
+                .thenApply(s -> {
+                    //System.out.println(testName + " - Futuro completable thenApply (1) con Thread: " + Thread.currentThread().getName());
+                    imprimirMensaje(testName + " - Futuro completable thenApply (1) con Thread: " + Thread.currentThread().getName());
+                    sleep(500);
+                    return s + "Esteban ";
+                })
+                .thenApplyAsync(s -> {
+                    //System.out.println(testName + " - Futuro completable thenApply (2) con Thread: "+ Thread.currentThread().getName());
+                    imprimirMensaje(testName + " - Futuro completable thenApply (2) con Thread: "+ Thread.currentThread().getName());
+                    return s + "Guevara";
+                }, es1);
+
+        try {
+            System.out.println(f2.get());
+            assertEquals("Daniel Esteban Guevara", f2.get());
+        } catch (Exception e) {
+            assertTrue(false);
+        }
     }
 
 }
