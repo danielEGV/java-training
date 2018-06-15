@@ -16,6 +16,8 @@ import java.util.stream.Stream;
 import java.util.List;
 import java.util.function.Consumer;
 import static io.vavr.control.Try.failure;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 public class TrySuite {
@@ -33,8 +35,12 @@ public class TrySuite {
                 Success(3),
                 myTrySuccess);
 
+
+        assertNotEquals(3, myTrySuccess);
+
         assertTrue("failed - the values is a Failure",
                 myTryFailure.isFailure());
+
     }
 
     private String patternMyTry(Try<Integer> myTry) {
@@ -98,6 +104,7 @@ public class TrySuite {
                 .andThen(arr -> arr.add(20))
                 .map(arr -> arr.get(1));
 
+
         assertEquals("Failure - it should return the value in the 1st position",
                 Try.success(30).toString(),
                 actual.toString());
@@ -116,6 +123,34 @@ public class TrySuite {
         assertEquals("Failure - it should transform the number to text",
                 "5 example of text",
                 transform);
+    }
+
+
+    public boolean foo(Try<Integer> t) {
+        return false;
+    }
+
+    @Test
+    public void testSuccessTransform2() {
+        Try<Integer> number = Try.of(() -> 5);
+        Try<Integer> transform = number.transform(self -> self);
+
+        Boolean transform1 = number.transform(self -> foo(self));
+
+        assertEquals("Failure - it should transform the number to text",
+                Success(5),
+                transform);
+
+        assertFalse(transform1);
+    }
+
+
+    @Test
+    public void testingMap() {
+        Try<Integer> tamano = Try.of(() -> "Daniel")
+                .map(String::length);
+
+        assertEquals(Success(6), tamano);
     }
 
     /**
