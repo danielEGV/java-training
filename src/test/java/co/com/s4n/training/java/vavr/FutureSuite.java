@@ -21,6 +21,8 @@ import static io.vavr.Predicates.instanceOf;
 import static io.vavr.Patterns.*;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertTrue;
+
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import static io.vavr.API.*;
 import static org.junit.Assert.assertNotEquals;
@@ -511,5 +513,20 @@ public class FutureSuite {
         myFutureOne.await();
         assertEquals("Failure - Validate Future with Promise",new Integer(15),myFutureOne.get());
         assertFalse("Failure - Validate myFuture is not complete",myFuture.isCompleted());
+    }
+
+    private Future<String> myFold(List<Future<String>> list, String zero, BiFunction<String, String, String> bo) {
+        String[] resultado = {zero};
+        List<String> strings = list.flatMap(a -> {
+            resultado[0] = bo.apply(resultado[0], a.get());
+            return Future.of(() -> resultado[0]);
+        });
+        return Future.of(() -> resultado[0]);
+    }
+
+    @Test
+    public void myFoldTest() {
+        List<Future<String>> myLista = List.of(Future.of(() -> "5 + 4"), Future.of(() -> "6 + 9"), Future.of(() -> "31 + 1"), Future.of(() -> "20 + 9"));
+        //Future<String> future = myFold(myLista);
     }
 }
