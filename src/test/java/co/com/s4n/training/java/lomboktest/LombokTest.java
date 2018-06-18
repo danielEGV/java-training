@@ -8,6 +8,6 @@ public class LombokTest {
     @Test
     public void testLombok() {
         ClassPersonLombok personLombok = new ClassPersonLombok("Daniel", 23);
-        //assertEquals("Daniel", personLombok.);
+        assertEquals("Daniel", personLombok.getName());
     }
 }
