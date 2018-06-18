@@ -529,4 +529,7 @@ public class FutureSuite {
         List<Future<String>> myLista = List.of(Future.of(() -> "5 + 4"), Future.of(() -> "6 + 9"), Future.of(() -> "31 + 1"), Future.of(() -> "20 + 9"));
         //Future<String> future = myFold(myLista);
     }
+
+
+
 }
