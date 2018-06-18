@@ -394,15 +394,24 @@ public class FutureSuite {
         return Future.of(() -> "");
     }*/
 
-/*
+
     private Future<String> myFold(List<Future<String>> list, String zero, BiFunction<String, String, String> bo) {
         String[] resultado = {zero};
         List<String> strings = list.flatMap(a -> {
             resultado[0] = bo.apply(resultado[0], a.get());
             return Future.of(() -> resultado[0]);
         });
-        return v;
-    }*/
+        return Future.of(() -> resultado[0]);
+    }
+
+    @Test
+    public void testMyFold() {
+        List<Future<String>> list = List.of(Future.of(() -> "A"), Future.of(() -> "B"), Future.of(() -> "C"), Future.of(() -> "D"));
+        BiFunction<String, String, String> bo = (a, b) -> a + b;
+        Future<String> future = myFold(list, "", bo);
+        future.await();
+        System.out.println(future.get());
+    }
 
     /**
      * Se puede crear un future utilizando funciones lambda
