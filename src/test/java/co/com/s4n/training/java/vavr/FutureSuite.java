@@ -844,4 +844,48 @@ public class FutureSuite {
         assertEquals("Failure - Validate Future with Promise",new Integer(15),myFutureOne.get());
         assertFalse("Failure - Validate myFuture is not complete",myFuture.isCompleted());
     }
+
+    private void sleep(int milliseconds){
+        try{
+            Thread.sleep(milliseconds);
+        }catch(Exception e){
+            System.out.println("Problemas durmiendo hilo");
+        }
+    }
+
+    @Test
+    public void testFutureLazy() {
+        Future<String> f1 = Future.of(() -> {
+            sleep(500);
+            return "Hola";
+        });
+
+        Future<String> f2 = Future.of(() -> {
+            sleep(800);
+            return " mundo";
+        });
+
+        Future<String> f3 = Future.of(() -> {
+            sleep(300);
+            return "!";
+        });
+
+        long inicio = System.nanoTime();
+
+        Future<String> fn = f1
+                .flatMap(a-> f2
+                        .flatMap(b -> f3
+                                .flatMap(c -> Future.of(() -> a + b + c))));
+
+        fn.await();
+
+        long fin = System.nanoTime();
+
+        double elapsed = (fin - inicio) * Math.pow(10, -6);
+
+        System.out.println("Elapsed: " + elapsed);
+
+        assertTrue(elapsed >= 800D);
+        assertEquals("Hola mundo!", fn.get());
+    }
 }
