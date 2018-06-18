@@ -21,6 +21,9 @@ import static io.vavr.Predicates.instanceOf;
 import static io.vavr.Patterns.*;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertTrue;
+
+import java.util.function.BiFunction;
+import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import static io.vavr.API.*;
 import static org.junit.Assert.assertNotEquals;
@@ -283,12 +286,123 @@ public class FutureSuite {
     public void testFutureToForEach() {
         java.util.List<Integer> results = new ArrayList<>();
         java.util.List<Integer> compare = Arrays.asList(9,15,32,29);
-        List<Future<Integer>> myLista = List.of(Future.of(() -> 5 + 4), Future.of(() -> 6 + 9), Future.of(() -> 31 + 1), Future.of(() -> 20 + 9));
+        List<Future<Integer>> myLista = List.of(
+                Future.of(() -> 5 + 4), Future.of(() -> 6 + 9), Future.of(() -> 31 + 1), Future.of(() -> 20 + 9));
         myLista.forEach(v -> {
             results.add(v.get());
         });
         assertEquals("Validate Foreach in Future", compare, results);
     }
+
+    @Test
+    public void forEachInFuture() {
+        final String[] result = {"666"};
+        Future<String> f1 = Future.of(() -> "1");
+        f1.forEach(i -> result[0] = i);
+        f1.await();
+        assertEquals(f1.get(), "1");
+        waitUntil(() -> "1".equals(result[0]));
+        assertEquals("1", result[0]);
+    }
+
+    @Test
+    public void forEachInFuture_1() {
+        final String[] result = {"666"};
+        Future<String> f1 = Future.of(() -> "1");
+        f1.map(i -> result[0] = i);
+        f1.await();
+        assertEquals(f1.get(), "1");
+    }
+
+    @Test
+    public void forEachInFuture_2() {
+        final String[] result = {"666"};
+        Future<String> f1 = Future.of(() -> "1");
+        Future<String> f2 = Future.of(() -> "1");
+        Future<String> strings = f1.onComplete(i -> result[0] = i.get());
+        f1.await();
+        assertEquals(f1.get(), "1");
+        System.out.println("OnComplete2: " + strings.get());
+        assertEquals(strings.get(), "1");
+        assertEquals(strings, f1);
+        assertNotEquals(f1, f2);
+    }
+
+    @Test
+    public void forEachInFuture_3() {
+        final String[] result = {"666"};
+        Future<Integer> f1 = Future.of(() -> 1);
+        Future<Integer> fold = Future.fold(List.of(f1),
+                0, (acc, el) -> acc + el);
+
+        assertEquals(new Integer(1), fold.get());
+
+        Future<String> f3 = Future.of(() -> "1");
+        Future<String> f4 = Future.of(() -> "2");
+        Future<String> f5 = Future.of(() -> "3");
+        Future<String> f6 = Future.fold(List.of(f3, f4, f5), "", (acc, el) -> acc + el);
+        Future<String> f7 = f6.await();
+        assertEquals("123", f7.get());
+        assertEquals(f6, f7);
+
+    }
+
+    @Test
+    public void forEachInFuture_4() {
+        Future<String> f3 = Future.of(() -> "1");
+        Future<String> f4 = Future.of(() -> "2");
+        Future<String> f5 = Future.failed(new Exception());
+        Future<String> f6 = Future.fold(List.of(f3, f4, f5), "", (acc, el) ->
+                {
+                    System.out.println(acc + el);
+                    return acc + el;});
+        Future<String> f7 = f6.await();
+        assertTrue(f7.isFailure());
+
+    }
+
+    @Test
+    public void forEachInFuture_7() {
+        Future<String> f3 = Future.of(() -> "1");
+        Future<String> f4 = Future.of(() -> "2");
+        Future<String> f5 = Future.failed(new Exception());
+        Future<String> f6 = f3.flatMap(a -> f4.flatMap(b -> f5.flatMap(c -> Future.of(() -> a + b + c))));
+        Future<String> f7 = f6.await();
+        assertTrue(f7.isFailure());
+
+    }
+
+    @Test
+    public void forEachInFuture_8() {
+        Future<String> f3 = Future.of(() -> "1");
+        Future<String> f4 = Future.of(() -> "2");
+        Future<String> f5 = Future.of(() -> "3");
+        Future<String> f6 = f3.flatMap(a -> f4.flatMap(b -> f5.flatMap(c -> Future.of(() -> a + b + c))));
+        Future<String> f7 = f6.await();
+        assertEquals("123", f7.get());
+
+    }
+
+    /*
+    private Future<String> myFold1(List<Future<String>> list, String zero, BiFunction<String, String, String> bo) {
+        Future<String> ofZero = Future.of(() -> zero);
+        Future<String> future = ofZero
+                .flatMap(z -> {
+                    Future<String> a = list.fold(z, (acc, el) -> Future.of(() -> bo.apply(acc.get(), el.get())));
+                    return
+                });
+        return Future.of(() -> "");
+    }*/
+
+/*
+    private Future<String> myFold(List<Future<String>> list, String zero, BiFunction<String, String, String> bo) {
+        String[] resultado = {zero};
+        List<String> strings = list.flatMap(a -> {
+            resultado[0] = bo.apply(resultado[0], a.get());
+            return Future.of(() -> resultado[0]);
+        });
+        return v;
+    }*/
 
     /**
      * Se puede crear un future utilizando funciones lambda
@@ -513,8 +627,37 @@ public class FutureSuite {
                 })
         ));
         aRecover.await();
+        System.out.println("Recover 1 " + thread1[0]);
+        System.out.println("Recover 2 " + thread2[0]);
         assertTrue("Failure - The future wasn't a success",aRecover.isSuccess());
         assertFalse("Failure - The threads should be different",thread1[0].equals(thread2[0]));
+        assertEquals("Failure - It's not two",new Integer(2),aRecover.get());
+    }
+
+    @Test
+    public void testFutureRecover_2() {
+        final String[] thread1 = {""};
+        final String[] thread2 = {""};
+        ExecutorService es = Executors.newFixedThreadPool(1);
+        Future<Integer> aFuture = Future.of(es,
+                () -> {
+                    Thread.sleep(1000);
+                    thread1[0] = Thread.currentThread().getName().toString();
+                    return 2/0;
+                }
+        );
+
+        Future<Integer> aRecover = aFuture.recover(it -> Match(it).of(
+                Case($(),() -> {
+                    thread2[0] = Thread.currentThread().getName().toString();
+                    return 2;
+                })
+        ));
+        aRecover.await();
+        System.out.println("Recover 1 " + thread1[0]);
+        System.out.println("Recover 2 " + thread2[0]);
+        assertTrue("Failure - The future wasn't a success",aRecover.isSuccess());
+        assertTrue("Failure - The threads should be different",thread1[0].equals(thread2[0]));
         assertEquals("Failure - It's not two",new Integer(2),aRecover.get());
     }
 
@@ -541,6 +684,51 @@ public class FutureSuite {
         assertTrue("Failure - The future wasn't a success",aRecover.isSuccess());
         assertFalse("Failure - The threads should be different",thread1[0].equals(thread2[0]));
         assertEquals("Failure - It's not one",new Integer(1),aRecover.get());
+    }
+
+    @Test
+    public void testFutureRecover_1() {
+        final String[] thread1 = {""};
+        final String[] thread2 = {""};
+        Future<Integer> aFuture = Future.of(
+                () -> {
+                    Thread.sleep(1000);
+                    thread1[0] = Thread.currentThread().getName().toString();
+                    return 2/0;
+                }
+        );
+        Future<Integer> aRecover = aFuture.recover(it -> Match(it).of(
+                Case($(),() -> {
+                    thread2[0] = Thread.currentThread().getName().toString();
+                    return 2/0;
+                })
+        ));
+        aRecover.await();
+        System.out.println("Recover 1 r " + thread1[0]);
+        System.out.println("Recover 2 r " + thread2[0]);
+        assertTrue("Failure - The future wasn't a success",aRecover.isFailure());
+        assertFalse("Failure - The threads should be different",thread1[0].equals(thread2[0]));
+    }
+
+    @Test
+    public void testFutureRecoverWith_1() {
+        final String[] thread1 = {""};
+        final String[] thread2 = {""};
+        ExecutorService service = Executors.newSingleThreadExecutor();
+        Future<Integer> aFuture = Future.of(service,() -> {
+            thread1[0] = Thread.currentThread().getName().toString();
+            return 2 / 0;
+        });
+        Future<Integer> aRecover = aFuture.recoverWith(it -> Match(it).of(
+                Case($(), () -> Future.of(() -> {
+                    thread2[0] = Thread.currentThread().getName().toString();
+                    return 2 / 0;
+                }))
+        ));
+        aRecover.await();
+        assertTrue("Failure - The future wasn't a success",aRecover.isFailure());
+        System.out.println("Recover 1 w " + thread1[0]);
+        System.out.println("Recover 2 w " + thread2[0]);
     }
 
     /**
