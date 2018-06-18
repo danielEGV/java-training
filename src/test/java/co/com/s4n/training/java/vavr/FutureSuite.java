@@ -60,7 +60,61 @@ public class FutureSuite {
      */
     @Test
     public void testOnCompleteSuccess() {
+        // Toma un futuro de un arreglo de String con tres elementos Text, To, Split
         Future<String[]> futureSplit = Future.of(() -> "TEXT_TO_SPLIT".split("_"));
+
+        //Si hubo un suceso entonces toma el tamaño del resultado e itera sobre el,
+        //toma cada uno y hace un lowercase
+        futureSplit.onComplete(res -> {
+            if (res.isSuccess()) {
+                for (int i = 0; i < res.get().length; i++) {
+                    res.get()[i] = res.get()[i].toLowerCase();
+                }
+            }
+            System.out.println("OnComplete " + Thread.currentThread().getName());
+        });
+        futureSplit.await();
+        String[] expected = {"text", "to", "split"};
+        //Wait until we are sure that the second thread (onComplete) is done.
+        // Espera 50 milisegundos, ya que en la posición 2 esta la palabra split.
+        waitUntil(() -> {
+            System.out.println("OnComplete2 " + Thread.currentThread().getName());
+            return futureSplit.get()[2].equals("split");
+        });
+
+        assertArrayEquals("The arrays are different", expected, futureSplit.get());
+    }
+
+    @Test
+    public void testOnCompleteSuccess_1() {
+        // Toma un futuro de un arreglo de String con tres elementos Text, To, Split
+        Future<String[]> futureSplit = Future.of(() -> "TEXT_TO_SPLIT".split("_"));
+
+        //Si hubo un suceso entonces toma el tamaño del resultado e itera sobre el,
+        //toma cada uno y hace un lowercase
+        futureSplit.onComplete(res -> {
+            if (res.isSuccess()) {
+                for (int i = 0; i < res.get().length; i++) {
+                    res.get()[i] = res.get()[i].toLowerCase();
+                }
+            }
+        });
+        //futureSplit.await();
+        String[] expected = {"text", "to", "split"};
+        //Wait until we are sure that the second thread (onComplete) is done.
+        // Espera 50 milisegundos, ya que en la posición 2 esta la palabra split.
+        waitUntil(() -> futureSplit.get()[2].equals("split"));
+
+        assertArrayEquals("The arrays are different", expected, futureSplit.get());
+    }
+
+    @Test
+    public void testOnCompleteSuccess_2() {
+        // Toma un futuro de un arreglo de String con tres elementos Text, To, Split
+        Future<String[]> futureSplit = Future.of(() -> "TEXT_TO_SPLIT".split("_"));
+
+        //Si hubo un suceso entonces toma el tamaño del resultado e itera sobre el,
+        //toma cada uno y hace un lowercase
         futureSplit.onComplete(res -> {
             if (res.isSuccess()) {
                 for (int i = 0; i < res.get().length; i++) {
@@ -71,9 +125,13 @@ public class FutureSuite {
         futureSplit.await();
         String[] expected = {"text", "to", "split"};
         //Wait until we are sure that the second thread (onComplete) is done.
-        waitUntil(() -> futureSplit.get()[2].equals("split"));
+        // Espera 50 milisegundos, ya que en la posición 2 esta la palabra split.
+        //waitUntil(() -> futureSplit.get()[2].equals("split"));
+
         assertArrayEquals("The arrays are different", expected, futureSplit.get());
     }
+
+
 
     /**
      *Valida la funcion de find aplicando un predicado que viene de una implementacion de la clase Iterable que contenga Futuros
@@ -108,15 +166,29 @@ public class FutureSuite {
     @Test
     public void testFutureToOnFails() {
         final String[] valor = {"default","pedro"};
+        String[] valor1 = {"hola", "hola"};
+
         Consumer<Object> funcion = element -> {
             valor[1] = "fallo";
         };
         Future<Object> myFuture = Future.of(() -> {throw new Error("No implemented");});
+
         myFuture.onFailure(funcion);
+
         assertEquals("Validete Onfailure in Future", "pedro",valor[1]);
+
+        System.out.println("Fail1: " + valor[1].toString());
+
         myFuture.await();
+
+        System.out.println("Fail2: " + valor[1].toString());
+
         assertTrue("Validete Onfailure in Future",myFuture.isFailure());
+
+        System.out.println("Fail3: " + valor[1].toString());
+
         waitUntil(() -> valor[1].toString()=="fallo");
+
         assertEquals("Validete Onfailure in Future", "fallo",valor[1]);
     }
 
@@ -127,9 +199,81 @@ public class FutureSuite {
     @Test
     public void testFutureToMap() {
         Future<Integer> myMap = Future.of( () -> "pedro").map(v -> v.length());
-        Future<Integer> myFlatMap = Future.of( () ->Future.of(() -> 5+9)).flatMap(v -> Future.of(()->v.await().getOrElse(15)));
+        Future<Integer> myFlatMap = Future.of( () ->Future.of(() -> 5+9))
+                .flatMap(v -> Future.of(()->v.await()
+                        .getOrElse(15)));
+        Future<Integer> myFlatMap1 = Future.of( () ->Future.of(() ->
+                new Integer(null))).flatMap(v -> Future.of(()->v.await().getOrElse(15)));
         assertEquals("validate map with future",new Integer(5),myMap.get());
         assertEquals("validate map with future",new Integer(14),myFlatMap.get());
+        assertEquals("validate map with future",new Integer(15),myFlatMap1.get());
+    }
+
+
+
+    @Test
+    public void testFutureToMap_1() {
+           Future<Integer> myMap = Future.of( () -> {
+                       System.out.println("Map0 " + Thread.currentThread().getName());
+                        return "pedro";
+                   }
+           ).map(v -> {
+              System.out.println("Map1 " + Thread.currentThread().getName());
+               return v.length();
+           });
+                   assertEquals("validate map with future",new Integer(5),myMap.get());
+    }
+
+    @Test
+    public void testFutureToMap_2() {
+        Future<Integer> myFlatMap = Future.of( () ->Future.of(() -> {return 5+9;}))
+                .flatMap(v -> Future.of(()->v.await()
+                        .getOrElse(15)));
+        Future<Integer> myFlatMap1 = Future.of( () ->Future.of(() ->
+                new Integer(null))).flatMap(v -> Future.of(()->v.await().getOrElse(15)));
+        assertEquals("validate map with future",new Integer(14),myFlatMap.get());
+        assertEquals("validate map with future",new Integer(15),myFlatMap1.get());
+    }
+
+    @Test
+    public void testFutureToMap_3() {
+        Future<Integer> myFlatMap = Future.of( () ->Future.of(() -> {return 5+9;}))
+                .flatMap(v -> Future.of(()->v.await()
+                        .getOrElse(15)));
+        Future<Integer> myFlatMap1 = Future.of( () ->Future.of(() ->
+                new Integer(null))).flatMap(v -> Future.of(()->v.getOrElse(15)));
+        assertEquals("validate map with future",new Integer(14),myFlatMap.get());
+        assertEquals("validate map with future",new Integer(15),myFlatMap1.get());
+    }
+
+    private Future<Double> sumar(Double x, Double y) {
+        return Future.of(() -> x + y);
+    }
+
+    private Future<Double> dividir(Double x, Double y) {
+        System.out.println("x: "+ x + "Y: " + y);
+        return (y != 0) ? Future.of(() -> x / y) : Future.failed(new Exception("/ error"));
+    }
+
+
+    @Test
+    public void testFlatMap_1() {
+        Future<Double> future = sumar(1D, 1D)
+                .flatMap(a -> sumar(a, 2D)
+                        .flatMap(b -> dividir(b, 2D)
+                                .flatMap(c -> sumar(a, 2D))));
+        future.await();
+        assertEquals(Future.of(() -> 4D).get(), future.get());
+    }
+
+    @Test
+    public void testFlatMap_2() {
+        Future<Double> future = sumar(1D, 1D)
+                .flatMap(a -> sumar(a, 2D)
+                        .flatMap(b -> dividir(b, 0D)
+                                .flatMap(c -> sumar(a, 2D))));
+        future.await();
+        assertTrue(future.isFailure());
     }
 
     /**
