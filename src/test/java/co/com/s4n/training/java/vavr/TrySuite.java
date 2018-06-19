@@ -11,11 +11,14 @@ import static io.vavr.Patterns.*;
 import static junit.framework.TestCase.assertEquals;
 import io.vavr.PartialFunction;
 import java.util.ArrayList;
+import java.util.concurrent.Executors;
 import java.util.stream.Stream;
 
 import java.util.List;
 import java.util.function.Consumer;
 import static io.vavr.control.Try.failure;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 public class TrySuite {
@@ -33,8 +36,12 @@ public class TrySuite {
                 Success(3),
                 myTrySuccess);
 
+
+        assertNotEquals(3, myTrySuccess);
+
         assertTrue("failed - the values is a Failure",
                 myTryFailure.isFailure());
+
     }
 
     private String patternMyTry(Try<Integer> myTry) {
@@ -98,6 +105,7 @@ public class TrySuite {
                 .andThen(arr -> arr.add(20))
                 .map(arr -> arr.get(1));
 
+
         assertEquals("Failure - it should return the value in the 1st position",
                 Try.success(30).toString(),
                 actual.toString());
@@ -117,6 +125,35 @@ public class TrySuite {
                 "5 example of text",
                 transform);
     }
+
+
+    public boolean foo(Try<Integer> t) {
+        return false;
+    }
+
+    @Test
+    public void testSuccessTransform2() {
+        Try<Integer> number = Try.of(() -> 5);
+        Try<Integer> transform = number.transform(self -> self);
+
+        Boolean transform1 = number.transform(self -> foo(self));
+
+        assertEquals("Failure - it should transform the number to text",
+                Success(5),
+                transform);
+
+        assertFalse(transform1);
+    }
+
+
+    @Test
+    public void testingMap() {
+        Try<Integer> tamano = Try.of(() -> "Daniel")
+                .map(String::length);
+
+        assertEquals(Success(6), tamano);
+    }
+
 
     /**
      * La funcionalidad transform va a generar error sobre un try con error.
@@ -330,6 +367,12 @@ public class TrySuite {
                 Try.failure(new ArithmeticException("/ by zero")).toString() ,
                 aTry2.toString());
     }
+
+    @Test
+    public void testTryAndRecover_1() {
+        //Try.of(() -> 2/0).recover(Exception.class, Try.of(() -> 2));
+    }
+
     /**
      *  El Recover retorna el valor a recuperar, pero sin Try, permitiendo que lance un Exception
      *  si, falla
@@ -355,6 +398,113 @@ public class TrySuite {
         };
         Try<Integer> aTry = Try.of(() -> 2).mapTry(checkedFunction1);
         assertEquals("Failed the checkedFuntion", Success(1),aTry);
+    }
+
+    private Try<Integer> sumar(Integer a, Integer b) {
+        return Try.of(() -> a + b);
+    }
+
+    private Try<Integer> divide(Integer a, Integer b) {
+        return Try.of(() -> a / b);
+    }
+
+    private Try<Integer> divideWithRecoder(Integer a, Integer b) {
+        return Try.of(() -> a / b).recoverWith(Exception.class, Try.of(() -> 0));
+    }
+
+    @Test
+    public void testMonadicCompuestoConFlatMap() {
+        Try<Integer> resultado = sumar(1, 2)
+                .flatMap(r0 -> sumar(r0, r0)
+                        .flatMap(r1 -> sumar(r1, -6)
+                                .flatMap(r2 -> divide(r2, r2))));
+
+        assertTrue(resultado.isFailure());
+    }
+
+    @Test
+    public void testMonadicCompuestoConFor() {
+        Try<Integer> resultado =
+                For(sumar(1, 2), r0 ->
+                For(sumar(r0, r0), r1 ->
+                For(sumar(r1, -6), r2 ->
+                divide(r2, r2)))).toTry();
+
+        assertTrue(resultado.isFailure());
+    }
+
+    @Test
+    public void testMonadicCompuestoConFlatMapRecover() {
+        Try<Integer> resultado = sumar(1, 2)
+                .flatMap(r0 -> sumar(r0, r0)
+                        .flatMap(r1 -> sumar(r1, -6)
+                                .flatMap(r2 -> divide(r2, r2).recover(Exception.class, 0))));
+
+        assertEquals(Success(0), resultado);
+    }
+
+    @Test
+    public void testMonadicCompuestoConForRecover() {
+        Try<Integer> resultado =
+                For(sumar(1, 2), r0 ->
+                        For(sumar(r0, r0), r1 ->
+                                For(sumar(r1, -6), r2 ->
+                                        divide(r2, r2).recover(Exception.class, 0)))).toTry();
+
+        assertEquals(Success(0), resultado);
+    }
+
+    @Test
+    public void testMonadicCompuestoConForRecover_1() {
+        Try<Integer> resultado =
+                For(sumar(1, 2), r0 ->
+                        For(sumar(r0, r0), r1 ->
+                                For(sumar(r1, -6), r2 ->
+                                        divide(r2, r2).recover(Exception.class, e-> 0)))).toTry();
+
+        assertEquals(Success(0), resultado);
+    }
+
+    @Test
+    public void testMonadicCompuestoConFlatMapRecover_1() {
+        Try<Integer> resultado = sumar(1, 2)
+                .flatMap(r0 -> sumar(r0, r0)
+                        .flatMap(r1 -> sumar(r1, -6)
+                                .flatMap(r2 -> divideWithRecoder(r2, r2))));
+
+        assertEquals(Success(0), resultado);
+    }
+
+    @Test
+    public void testMonadicCompuestoConForRecover_2() {
+        Try<Integer> resultado =
+                For(sumar(1, 2), r0 ->
+                        For(sumar(r0, r0), r1 ->
+                                For(sumar(r1, -6), r2 ->
+                                        divideWithRecoder(r2, r2)))).toTry();
+
+        assertEquals(Success(0), resultado);
+    }
+
+    @Test
+    public void testMonadicCompuestoConFlatMapRecover_2() {
+        Try<Integer> resultado = sumar(1, 2)
+                .flatMap(r0 -> sumar(r0, r0)
+                        .flatMap(r1 -> sumar(r1, -6)
+                                .flatMap(r2 -> divide(r2, r2).recoverWith(Exception.class, Try.of(() -> 0)))));
+
+        assertEquals(Success(0), resultado);
+    }
+
+    @Test
+    public void testMonadicCompuestoConForRecover_3() {
+        Try<Integer> resultado =
+                For(sumar(1, 2), r0 ->
+                        For(sumar(r0, r0), r1 ->
+                                For(sumar(r1, -6), r2 ->
+                                        divide(r2, r2).recoverWith(Exception.class, Try.of(() -> 0))))).toTry();
+
+        assertEquals(Success(0), resultado);
     }
 
 }
