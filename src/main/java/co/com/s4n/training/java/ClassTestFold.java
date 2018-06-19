@@ -17,3 +17,4 @@ public class ClassTestFold<A> {
         return Future.of(() -> resultado[0]);
     }
 }
+
