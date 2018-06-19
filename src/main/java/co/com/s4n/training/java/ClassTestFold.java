@@ -7,7 +7,7 @@ import java.util.function.BiFunction;
 
 public class ClassTestFold<A> {
 
-    private Future<A> myFold(List<Future<A>> list, A zero, BiFunction<A, A, A> bo) {
+    public Future<A> myFold(List<Future<A>> list, A zero, BiFunction<A, A, A> bo) {
         A[] resultado = (A[]) new Object[1];
         resultado[0] = zero;
         List<A> strings = list.flatMap(a -> {

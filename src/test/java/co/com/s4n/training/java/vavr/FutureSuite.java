@@ -1,5 +1,6 @@
 package co.com.s4n.training.java.vavr;
 
+import co.com.s4n.training.java.ClassTestFold;
 import io.vavr.Function1;
 import io.vavr.collection.List;
 import io.vavr.collection.Seq;
@@ -896,5 +897,50 @@ public class FutureSuite {
 
         assertTrue(elapsed >= 800D);
         assertEquals("Hola mundo!", fn.get());
+    }
+
+    @Test
+    public void testMyFoldGenerico() {
+        List<Future<String>> list = List.of(Future.of(() -> "A"), Future.of(() -> "B"), Future.of(() -> "C"), Future.of(() -> "D"));
+        BiFunction<String, String, String> bo = (a, b) -> a + b;
+        ClassTestFold<String> classTestFold = new ClassTestFold<>();
+
+        Future<String> future = classTestFold.myFold(list, "", bo);
+        future.await();
+        System.out.println("Generica: " + future.get());
+        assertEquals("ABCD", future.get());
+    }
+
+    @Test
+    public void testMyFoldGenerico_1() {
+        List<Future<String>> list = List.of(Future.of(() -> "A"), Future.of(() -> "B"), Future.of(() -> "C"), Future.of(() -> "D"));
+        BiFunction<String, String, String> bo = (b, a) -> a + b;
+        ClassTestFold<String> classTestFold = new ClassTestFold<>();
+        Future<String> future = classTestFold.myFold(list, "", bo);
+        future.await();
+        System.out.println("Generica: " + future.get());
+        assertEquals("DCBA", future.get());
+    }
+
+    @Test
+    public void testMyFoldGenerico_2() {
+        List<Future<Integer>> list = List.of(Future.of(() -> 1 + 2), Future.of(() -> 2 + 3), Future.of(() -> 3 + 4), Future.of(() -> 4 + 5));
+        BiFunction<Integer, Integer, Integer> bo = (a, b) -> a + b;
+        ClassTestFold<Integer> classTestFold = new ClassTestFold<>();
+        Future<Integer> future = classTestFold.myFold(list, 0, bo);
+        future.await();
+        System.out.println("Generica: " + future.get());
+        assertEquals(new Integer(24), future.get());
+    }
+
+    @Test
+    public void testMyFoldGenerico_3() {
+        List<Future<Integer>> list = List.of(Future.of(() -> 1 + 2), Future.of(() -> 2 + 3), Future.of(() -> 3 + 4), Future.of(() -> 4 + 5));
+        BiFunction<Integer, Integer, Integer> bo = (a, b) -> a * b;
+        ClassTestFold<Integer> classTestFold = new ClassTestFold<>();
+        Future<Integer> future = classTestFold.myFold(list, 1, bo);
+        future.await();
+        System.out.println("Generica: " + future.get());
+        assertEquals(new Integer(945), future.get());
     }
 }
