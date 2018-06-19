@@ -105,6 +105,7 @@ public class ValidationSuite
         assertTrue("ap should be invalid",res.isInvalid());
     }
 
+    @Test
     public void testValidation3() {
 
         Validation<Seq<String>, MyClass> res=  Validation
@@ -156,6 +157,34 @@ public class ValidationSuite
                 finalValidation.getError().get(0).getMessage());
 
         // Cambialo para que verifiques con fold! :D
+    }
+
+    @Test
+    public void testCombineWithAnInvalid_1(){
+
+        Validation<Error,String> valid = Validation.valid("Lets");
+        Validation<Error,String> valid2 = Validation.valid("Go!");
+        Validation<Error, String> invalid = Validation.invalid(new Error("Stop!"));
+
+        Validation<Seq<Error>, String> finalValidation = Validation.combine(valid, invalid , valid2).ap((v1,v2,v3) -> v1 + v2 + v3);
+
+        Integer resultado = finalValidation.fold(s -> 1, c -> 2);
+
+        assertEquals(new Integer(1), resultado);
+    }
+
+    @Test
+    public void testCombineWithAnInvalid_2(){
+
+        Validation<Error,String> valid = Validation.valid("Lets");
+        Validation<Error,String> valid2 = Validation.valid("Go!");
+        Validation<Error, String> invalid = Validation.invalid(new Error("Stop!"));
+
+        Validation<Seq<Error>, String> finalValidation = Validation.combine(valid, invalid , valid2).ap((v1,v2,v3) -> v1 + v2 + v3);
+
+        String resultado = finalValidation.fold(s -> s.get(0).getMessage(), c -> c);
+
+        assertEquals("Stop!", resultado);
     }
 
     /**
@@ -234,6 +263,25 @@ public class ValidationSuite
                 "Valid(John Doe,39,address,111-111-1111,alt1,alt2,alt3,alt4)",
                 result8.ap(TestValidation::new).toString());
     }
+/*
+    @Test
+    public void testBuilder8_1() {
+
+        Validation<String, String> v1 = Validation.valid("John Doe");
+        Validation<String, Integer> v2 = Validation.valid(39);
+        Validation<String, Option<String>> v3 = Validation.valid(Option.of("address"));
+
+        Validation<String, String> v4 = Validation.valid("111-111-1111");
+        Validation<String, String> v5 = Validation.valid("alt1");
+        Validation<String, String> v6 = Validation.valid("alt2");
+        Validation<String, String> v7 = Validation.valid("alt3");
+        Validation<String, String> v8 = Validation.valid("alt4");
+
+        Validation.Builder7<String, String, Integer, Option<String>, String, String, String, String> result7 =
+                Validation.combine(v1, v2, v3, v4, v5, v6, v7);
+
+        assertEquals(result7.ap(TestValidation::new).toString());
+    }*/
 
     /**
      *  Me permite recorrer una coleccion de Validation y operarlos
@@ -256,6 +304,76 @@ public class ValidationSuite
         assertEquals("Failure- Was not operated",
                 Arrays.asList("Operacion 0","Operacion 1","Operacion 2"),msg);
     }
+
+    @Test
+    public void testValidatorAndInvalid() {
+        int[] validArray = {0};
+        int[] invalidArray = {0};
+
+        Validation<Error, String> v1 = Validation.valid("Hola ");
+        Validation<Error, String> v2 = Validation.invalid(new Error("Error"));
+        Validation<Error, String> v3 = Validation.valid("Mundo");
+        Validation<Error, String> v4 = Validation.invalid(new Error("Error"));
+        Validation<Error, String> v5 = Validation.valid("!");
+
+        ArrayList<String> msg = new ArrayList<>();
+        List<Validation<Error,String>> validation = List.of(v1, v2, v3, v4, v5);
+
+        Consumer<Validation<Error,String>> consumer = s -> {
+            if (s.isValid()) {
+                ++validArray[0];
+            } else {
+                ++invalidArray[0];
+            }
+        };
+        validation.forEach(consumer);
+        assertEquals(3, validArray[0]);
+        assertEquals(2, invalidArray[0]);
+    }
+
+    @Test
+    public void testValidatorAndInvalid_1() {
+        class ClassValidation {
+            int[] validArray = {0};
+            int[] invalidArray = {0};
+
+            public Validation<Error, String> validar(Validation<Error, String> validation) {
+                if (validation.isValid()) {
+                    ++validArray[0];
+                } else {
+                    ++invalidArray[0];
+                }
+                return validation;
+            }
+
+            public String validar1(Object validation) {
+                if (validation instanceof Error) {
+                    ++invalidArray[0];
+                } else {
+                    ++validArray[0];
+                }
+                return validation.toString();
+            }
+        }
+
+        ClassValidation classValidation = new ClassValidation();
+
+        Validation<Error, String> v1 = Validation.valid("Hola ");
+        Validation<Error, String> v2 = Validation.invalid(new Error("Error"));
+        Validation<Error, String> v3 = Validation.valid("Mundo");
+        Validation<Error, String> v4 = Validation.invalid(new Error("Error"));
+        Validation<Error, String> v5 = Validation.valid("!");
+
+        Validation
+                .combine(classValidation.validar(v1), classValidation.validar(v2), classValidation.validar(v3), classValidation.validar(v4), classValidation.validar(v5));
+                //.ap((a1, a2, a3, a4, a5) ->
+                  //      classValidation.validar1(a1) + classValidation.validar1(a2) + classValidation.validar1(a3) + classValidation.validar1(a4) + classValidation.validar1(a5));
+
+        assertEquals(classValidation.validArray[0], 3);
+        assertEquals(classValidation.invalidArray[0], 2);
+    }
+
+
 
     /**
      *  El flatmap retorna otro validation, y los resultados de otros validation se pueden encadenar
