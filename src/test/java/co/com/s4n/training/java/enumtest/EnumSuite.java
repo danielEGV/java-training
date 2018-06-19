@@ -2,9 +2,14 @@ package co.com.s4n.training.java.enumtest;
 
 import co.com.s4n.training.java.ClassEnumColor;
 import co.com.s4n.training.java.ClassEnumEquipo;
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import org.junit.platform.runner.JUnitPlatform;
+import org.junit.runner.RunWith;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+//import org.junit.Test;
+//import static org.junit.Assert.*;
+@RunWith(JUnitPlatform.class)
 public class EnumSuite {
 
     @Test

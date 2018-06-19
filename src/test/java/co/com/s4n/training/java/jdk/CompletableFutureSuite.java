@@ -1,10 +1,13 @@
 package co.com.s4n.training.java.jdk;
 
-import static org.junit.Assert.*;
+//import static org.junit.Assert.*;
 
 //import com.sun.java.util.jar.pack.Package;
 import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.platform.runner.JUnitPlatform;
+import org.junit.runner.RunWith;
+//import org.junit.Test;
 
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -12,6 +15,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.*;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+@RunWith(JUnitPlatform.class)
 public class CompletableFutureSuite {
 
     private void sleep(int milliseconds){

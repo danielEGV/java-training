@@ -4,13 +4,20 @@ import io.vavr.Lazy;
 import io.vavr.concurrent.Future;
 import io.vavr.control.Option;
 import io.vavr.control.Try;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.platform.runner.JUnitPlatform;
+import org.junit.runner.RunWith;
+//import org.junit.Test;
 
 import java.util.function.Supplier;
 
 import static io.vavr.API.Some;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+//import static org.junit.Assert.*;
 
+@RunWith(JUnitPlatform.class)
 public class LazySuite {
 
     private static final long WAIT_MILLIS = 50;

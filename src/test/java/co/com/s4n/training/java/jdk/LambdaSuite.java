@@ -1,15 +1,25 @@
 package co.com.s4n.training.java.jdk;
 
-import static org.junit.Assert.*;
+//import static org.junit.Assert.*;
 
 import co.com.s4n.training.java.ClaseLambda;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
+import org.junit.platform.runner.JUnitPlatform;
+import org.junit.runner.RunWith;
+//import org.junit.jupiter.api.Test;
+//import org.junit.Assert;
+//import org.junit.Test;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.IntBinaryOperator;
 import java.util.function.Supplier;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+@RunWith(JUnitPlatform.class)
 public class LambdaSuite {
 
     @FunctionalInterface
@@ -42,6 +52,7 @@ public class LambdaSuite {
         int resultado = instancia.metodoDeEjemplo1(1,i);
 
         assertTrue(resultado==4);
+
     }
 
     @Test
@@ -272,7 +283,7 @@ public class LambdaSuite {
         ClaseEjercicio2Lambda c = new ClaseEjercicio2Lambda();
         String resultado = c.metodoCaracterCompuesto('b', e);
 
-        Assert.assertEquals("bca", resultado);
+        assertEquals("bca", resultado);
     }
 
     @Test
@@ -288,7 +299,7 @@ public class LambdaSuite {
 
         String resultado1 = c.metodoCaracterCompuesto2('b', caracter);
 
-        Assert.assertEquals("bca", resultado1);
+        assertEquals("bca", resultado1);
     }
 
     @FunctionalInterface
@@ -309,7 +320,7 @@ public class LambdaSuite {
 
         int result = bOp.applyAsInt(3, 4);
 
-        Assert.assertEquals(10, result);
+        assertEquals(10, result);
     }
 
     @Test
@@ -334,7 +345,7 @@ public class LambdaSuite {
         Consumer<String> c = claseLambda.setA();
         c.accept("Hola");
 
-        Assert.assertEquals("Hola", claseLambda.a);
+        assertEquals("Hola", claseLambda.a);
 
     }
 

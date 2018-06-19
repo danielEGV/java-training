@@ -7,12 +7,16 @@ import io.vavr.Function1;
 import io.vavr.control.Option;
 import io.vavr.control.Try;
 import org.junit.Assert;
-import org.junit.Test;
+//import org.junit.Test;
 import static io.vavr.API.*;
 import static io.vavr.Predicates.*;
 import static io.vavr.Patterns.*;
-import static junit.framework.TestCase.assertEquals;
+//import static junit.framework.TestCase.assertEquals;
 import io.vavr.PartialFunction;
+import org.junit.jupiter.api.Test;
+import org.junit.platform.runner.JUnitPlatform;
+import org.junit.runner.RunWith;
+
 import java.util.ArrayList;
 import java.util.concurrent.Executors;
 import java.util.stream.Stream;
@@ -22,9 +26,11 @@ import java.util.function.Consumer;
 import static io.vavr.control.Try.failure;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+//import static org.junit.Assert.assertTrue;
 
-
+@RunWith(JUnitPlatform.class)
 public class EjercicioTrySuite {
 
     @Test
