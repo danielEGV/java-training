@@ -1,6 +1,9 @@
 package co.com.s4n.training.java.vavr;
 
 import org.junit.Assert;
+import co.com.s4n.training.java.ClassEjercicioOption;
+import jdk.internal.dynalink.support.ClassMap;
+
 import org.junit.Test;
 
 
@@ -361,4 +364,134 @@ public class OptionSuite {
 
         assertEquals(res.getOrElse(666).intValue(), 6);
     }
+
+    @Test
+    public void ejercicioOptionFlatMap() {
+        Option<Double> resultado = ClassEjercicioOption.elevar(2D, 3D)
+                .flatMap(a -> ClassEjercicioOption.multiplicar(a, 2D)
+                .flatMap(b -> ClassEjercicioOption.dividir(b, 4D)
+                .flatMap(c -> ClassEjercicioOption.multiplicar(c, a))));
+
+        assertEquals(32D, resultado.getOrElse(0D).doubleValue(), 0D);
+    }
+
+    @Test
+    public void ejercicioOptionFor() {
+        Option<Double> resultado =
+                For(ClassEjercicioOption.elevar(2D, 3D), a ->
+                For(ClassEjercicioOption.multiplicar(a, 2D), b ->
+                For(ClassEjercicioOption.dividir(b, 4D), c ->
+                ClassEjercicioOption.multiplicar(c, a)))).toOption();
+
+        assertEquals(32D, resultado.getOrElse(0D).doubleValue(), 0D);
+    }
+
+    @Test
+    public void ejercicioOptionFlatMap_1() {
+        Option<String> resultado = ClassEjercicioOption.elevar(2D, 3D)
+                        .flatMap(a -> ClassEjercicioOption.dividir(a, 2D)
+                        .flatMap(b -> ClassEjercicioOption.multiplicar(b, 2D)
+                        .flatMap(c -> ClassEjercicioOption.concatenar(String.valueOf(a), String.valueOf(b))
+                                .flatMap(d -> ClassEjercicioOption.concatenar(d, String.valueOf(c))))));
+
+        assertEquals("8.0 - 4.0 - 8.0", resultado.getOrElse("Error").toString());
+    }
+
+    @Test
+    public void ejercicioOptionFor_1() {
+        Option<String> resultado =
+                For(ClassEjercicioOption.elevar(2D, 3D), a ->
+                For(ClassEjercicioOption.dividir(a, 2D), b ->
+                For(ClassEjercicioOption.multiplicar(b, 2D), c ->
+                For(ClassEjercicioOption.concatenar(String.valueOf(a), String.valueOf(b)), d ->
+                ClassEjercicioOption.concatenar(d, String.valueOf(c)))))).toOption();
+
+        assertEquals("8.0 - 4.0 - 8.0", resultado.getOrElse("Error"));
+    }
+
+    @Test
+    public void ejercicioOptionFlatMap_2() {
+        Option<String> resultado = ClassEjercicioOption.elevar(2D, 3D)
+                .flatMap(a -> ClassEjercicioOption.multiplicar(a, 2D)
+                .flatMap(b -> ClassEjercicioOption.dividir(a, 0D)
+                .flatMap(c -> ClassEjercicioOption.concatenar(String.valueOf(a), String.valueOf(b))
+                .flatMap(d -> ClassEjercicioOption.concatenar(d, String.valueOf(c))))));
+
+        assertEquals(None(), resultado);
+        assertEquals("Error", resultado.getOrElse("Error"));
+    }
+
+    @Test
+    public void ejercicioOptionFor_2() {
+        Option<String> resultado =
+                For(ClassEjercicioOption.elevar(2D, 3D), a ->
+                For(ClassEjercicioOption.multiplicar(a, 2D), b ->
+                For(ClassEjercicioOption.dividir(a, 0D), c ->
+                For(ClassEjercicioOption.concatenar(String.valueOf(a), String.valueOf(b)), d ->
+                ClassEjercicioOption.concatenar(d, String.valueOf(c)))))).toOption();
+
+        assertEquals(None(), resultado);
+        assertEquals("Error", resultado.getOrElse("Error"));
+    }
+
+    @Test
+    public void ejercicioOptionFlatMapOther() {
+        //No se puede concatenar de esta forma, no puedo tomar a y/o b. Solo opero con el resultado anterior.
+        Option<String> resultado = ClassEjercicioOption.elevar(2D, 3D)
+                .flatMap(a -> ClassEjercicioOption.multiplicar(a, 2D))
+                .flatMap(b -> ClassEjercicioOption.dividir(b, 4D))
+                .flatMap(c -> ClassEjercicioOption.concatenar(String.valueOf(c), String.valueOf(8D)));
+
+        assertEquals("4.0 - 8.0", resultado.getOrElse("Error"));
+    }
+
+    @Test
+    public void ejercicioOptionFlatMap_3() {
+        Option<String> resultado = ClassEjercicioOption.elevar(-2D, 0.5)
+                .flatMap(a -> ClassEjercicioOption.multiplicar(a, 2D)
+                        .flatMap(b -> ClassEjercicioOption.dividir(b, 4D)
+                                        .flatMap(c -> ClassEjercicioOption.concatenar(String.valueOf(c), String.valueOf(8D))
+                )));
+
+        assertEquals(None(), resultado);
+        assertEquals("Error", resultado.getOrElse("Error"));
+    }
+
+    @Test
+    public void ejercicioOptionFor_3() {
+        Option<String> resultado =
+                For(ClassEjercicioOption.elevar(-2D, 0.5), a ->
+                For(ClassEjercicioOption.multiplicar(a, 2D), b ->
+                For(ClassEjercicioOption.dividir(b, 4D), c ->
+                ClassEjercicioOption.concatenar(String.valueOf(c), String.valueOf(8D))))).toOption();
+
+        assertEquals(None(), resultado);
+        assertEquals("Error", resultado.getOrElse("Error"));
+    }
+
+    @Test
+    public void ejercicioOptionFlatMap_4() {
+        Option<String> resultado = ClassEjercicioOption.elevar(4D, 0.5)
+                .flatMap(a -> ClassEjercicioOption.multiplicar(a, 2D)
+                        .flatMap(b -> ClassEjercicioOption.dividir(b, 4D)
+                                .flatMap(c -> ClassEjercicioOption.concatenar(String.valueOf(c), String.valueOf(8D))
+                                )));
+
+        assertEquals("1.0 - 8.0", resultado.getOrElse("Error"));
+    }
+
+    @Test
+    public void ejercicioOptionFor_4() {
+        Option<String> resultado =
+                For(ClassEjercicioOption.elevar(4D, 0.5), a ->
+                        For(ClassEjercicioOption.multiplicar(a, 2D), b ->
+                                For(ClassEjercicioOption.dividir(b, 4D), c ->
+                                        ClassEjercicioOption.concatenar(String.valueOf(c), String.valueOf(8D))))).toOption();
+
+        assertEquals("1.0 - 8.0", resultado.getOrElse("Error"));
+    }
+
+
+
+
 }
