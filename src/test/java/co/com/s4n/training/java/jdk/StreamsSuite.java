@@ -57,12 +57,41 @@ public class StreamsSuite {
     }
 
     @Test
+    public void testStreams3_1(){
+        Stream<String> stringStream;
+        stringStream = Stream.of();
+        Optional<String> first = stringStream
+                .findFirst();
+
+        assertFalse(first.isPresent());
+        assertEquals("NONE",first.orElseGet(()->"NONE"));
+
+    }
+
+    @Test
     public void testStreams4(){
         OptionalInt first = IntStream.range(1, 4)
                 .findFirst();
 
         assertEquals(1,first.orElseGet(()->666));
 
+    }
+
+    @Test
+    public void testStreams4_1(){
+        //int[] c = IntStream.range(1, 4).toArray();
+
+        IntStream range = IntStream.range(1, 4);
+        Stream<Integer> s = range.boxed();
+
+        //range.mapToObj(Integer::new);
+
+        List<Integer> l = s.collect(Collectors.toList());
+
+        assertEquals(3, l.size());
+        assertTrue(l.contains(1));
+        assertTrue(l.contains(2));
+        assertTrue(l.contains(3));
     }
 
 
@@ -73,6 +102,49 @@ public class StreamsSuite {
                 .average();
 
         assertEquals(5D,average.orElseGet(()->666),0D);
+
+    }
+
+    @Test
+    public void testStreams7_1(){
+        List<String> l = Arrays.asList("a1", "a2", "a3");
+
+
+        List<String> l1 = new ArrayList<>();
+        List<Integer> l2 = new ArrayList<>();
+
+
+        l.forEach(s -> l1.add(s.substring(1)));
+        l1.forEach(s -> l2.add(Integer.parseInt(s)));
+        l2.sort((c1, c2) -> c2.compareTo(c1));
+
+        int resultado = l2.get(0).intValue();
+
+        assertEquals(3, resultado);
+
+
+
+        /*IntStream i = l.stream()
+                .map(s -> s.substring(1))
+                .mapToInt(Integer::parseInt);
+        OptionalInt max = i.max();
+
+
+        assertEquals(3,max.orElseGet(()->666));*/
+        List<Integer> integers = new ArrayList<>();
+
+        for (String s: l) {
+            String s1 = s.substring(1);
+            integers.add(Integer.parseInt(s1));
+        }
+
+        int n = Integer.MIN_VALUE;
+        for (Integer integer : integers) {
+            n = Integer.max(integer, n);
+        }
+
+        assertEquals(3, n);
+
 
     }
 
@@ -205,6 +277,22 @@ public class StreamsSuite {
     }
 
     @Test
+    public void testStream11_1(){
+        boolean b = Stream.of("d2", "a2", "b1", "b3", "c")
+                .map(s -> {
+                    System.out.println(s);
+                    return s.toUpperCase();
+                })
+                .anyMatch(s -> {
+                    System.out.println(s);
+                    return s.startsWith("A");
+                });
+
+        assertTrue(b);
+
+    }
+
+    @Test
     public void testStreams12(){
         List<String> collect = Stream.of("d2", "a2", "b1", "b3", "c")
                 .map(s -> {
@@ -222,11 +310,36 @@ public class StreamsSuite {
     @Test
     public void testStreams13() {
         //TODO: cambia el orden de map y filter
+
+        List<String> collect = Stream.of("d2", "a2", "b1", "b3", "c")
+                .filter(s -> {
+                    return s.startsWith("A");
+                })
+                .map(s -> {
+                    return s.toUpperCase();
+                })
+                .collect(Collectors.toList());
+
+        assertTrue(collect.size()==0);
+        assertFalse(collect.contains("A2"));
         assertTrue(true);
     }
 
     @Test(expected = java.lang.IllegalStateException.class)
     public void testStreams14() {
+        Stream<String> stream =
+                Stream.of("d2", "a2", "b1", "b3", "c")
+                        .filter(s -> s.startsWith("a"));
+
+        boolean b = stream.anyMatch(s -> true);
+        assertTrue(b);
+
+        //Un stream no se puede volver a usar despues de haberse ejecutado una operacion final sobre el :(
+        stream.noneMatch(s -> true);
+    }
+
+    @Test(expected = java.lang.IllegalStateException.class)
+    public void testStreams14_1() {
         Stream<String> stream =
                 Stream.of("d2", "a2", "b1", "b3", "c")
                         .filter(s -> s.startsWith("a"));
@@ -250,6 +363,9 @@ public class StreamsSuite {
 
         assert(b);
         assert(b1);
+
+        assertTrue(b);
+        assertFalse(b1);
 
     }
 
@@ -301,6 +417,8 @@ public class StreamsSuite {
                         .collect(Collectors.toList());
 
         assertTrue(filtered.size()==2);
+        assertTrue(filtered.stream().anyMatch(p -> p.name.equals("Peter")));
+        assertTrue(filtered.stream().anyMatch(p -> p.name.equals("Pamela")));
 
     }
 
